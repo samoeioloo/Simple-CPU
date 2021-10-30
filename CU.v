@@ -152,11 +152,14 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
                     sel3 <= 0;
                     w_r <= 0;
                 end else if (instruction[19:18] == 2'b11) begin //storeR
-                   /********************************************
-                   *
-                   * FILL IN CORRECT CODE HERE
-                   *
-                   ********************************************/
+                    regfile[instruction[17:16]] <= result2; //From data mem
+                    operand1 <= regfile[instruction[15:14]]; //X2
+                    operand2 <= regfile[instruction[17:16]]; //z
+                    offset <= instruction[11:4];
+                    opcode <= instruction[3:0];
+                    sel1 <= 1; //pass data_out
+                    sel3 <= 0; //pass offset
+                    w_r <= 1;
 
                 end else if (instruction[19:18] == 2'b10) begin //loadR
                     regfile[instruction[17:16]] <= result2; //From data mem
