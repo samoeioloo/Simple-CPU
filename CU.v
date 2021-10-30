@@ -108,11 +108,13 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
                     sel3 <= 1; //pass offset
                     w_r <= 0;
                 end else if (instruction[19:18] == 2'b11) begin //storeR
-                   /********************************************
-                   *
-                   * FILL IN CORRECT CODE HERE
-                   *
-                   ********************************************/
+                  operand1 <= regfile[instruction[15:14]]; //X2
+                  operand2 <= regfile[instruction[17:16]]; //z
+                  offset <= instruction[11:4];
+                  opcode <= instruction[3:0];
+                  sel1 <= 1;
+                  sel3 <= 1; //pass offset
+                  w_r <= 1; // 1 since we're writing to memory
                 end
             end
             MEM_ACCESS: begin //#3
