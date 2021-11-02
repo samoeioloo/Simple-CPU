@@ -19,6 +19,8 @@ module tb_simple_CPU;
         repeat(3) #1 clk=!clk;
         rst = 1'b0;
         repeat(2) #1 clk=!clk;
+        $dumpfile("dump.vcd");
+        $dumpvars();
                 
                 
         /*Info on the simple CPU:

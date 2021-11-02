@@ -73,4 +73,6 @@ xvlog.*
 ## checkpoint files
 *.dcp
 
-
+*.docx
+*.pdf
+*.doc

@@ -1,4 +1,7 @@
-`timescale 1ns / 1ps
+//`timescale 1ns / 1ps
+`include "CU.sv"
+`include "alu.sv"
+`include "RegMem.sv"
 
 module simple_cpu( clk, rst, instruction );
 
@@ -22,7 +25,7 @@ module simple_cpu( clk, rst, instruction );
     //Wire for connecting to CU
     wire [DATA_WIDTH-1:0]offset_i;
     wire sel1_i, sel3_i;
-    wire [DATA_WIDTH-1:0] operand_1_i, operand_2_i;
+  	wire [DATA_WIDTH-1:0] operand_1_i, operand_2_i, operand_3_i;
 
     
     
@@ -34,7 +37,7 @@ module simple_cpu( clk, rst, instruction );
     
     //Instantiation of a CU
     CU  #(DATA_WIDTH,ADDR_BITS, INSTR_WIDTH) CU1(clk, rst, instruction, result2_i,
-        operand_1_i, operand_2_i, offset_i, opcode_i, sel1_i, sel3_i, wen_i);
+        operand_1_i, operand_2_i, operand_3_i, offset_i, opcode_i, sel1_i, sel3_i, wen_i);
     
 
     
@@ -70,7 +73,6 @@ module simple_cpu( clk, rst, instruction );
 
 
 endmodule
-
 
 
 

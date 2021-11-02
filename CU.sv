@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, sel3,w_r);
+module CU (clk,rst, instr, result2, operand1, operand2, operand3, offset, opcode, sel1, sel3,w_r);
     //Defaults unless overwritten during instantiation
     parameter DATA_WIDTH = 8; //8 bit wide data
     parameter ADDR_BITS = 5; //32 Addresses
@@ -13,6 +13,7 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
     //OUTPUTS
     output reg [DATA_WIDTH-1:0] operand1;
     output reg [DATA_WIDTH-1:0] operand2;
+  	output reg [DATA_WIDTH-1:0] operand3;
     output reg [DATA_WIDTH-1:0] offset;
     output reg [3:0] opcode;
     output reg sel1, sel3, w_r;
@@ -50,6 +51,7 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
                 //Set output reset defaults
                 operand1 <= #(DATA_WIDTH)'d0;
                 operand2 <= #(DATA_WIDTH)'d0;
+              	operand3 <= #(DATA_WIDTH)'d0;
                 offset <= #(DATA_WIDTH)'d0;
                 opcode <= 4'b1111;
                 sel1 <= 0;
@@ -59,10 +61,11 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
             end
 
             DECODE : begin //#1
-                state = EXECUTE; //#2 // execution happens after decoding
+                state = EXECUTE; //#2
                 if (instruction[19:18] == 2'b1) begin //std_op
                     operand1 <= regfile[instruction[15:14]]; //X2
                     operand2 <= regfile[instruction[13:12]]; //X3
+                  	//operand3 <= regfile;
                     offset <= instruction[11:4];
                     opcode <= instruction[3:0];
                    sel1 <= 1;
@@ -71,19 +74,22 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
                 end else if (instruction[19:18] == 2'b10) begin //loadR
                     operand1 <= regfile[instruction[15:14]]; //X2
                     operand2 <= regfile[instruction[17:16]]; //z
+                  	//operand3 <= regfile;
                     offset <= instruction[11:4];
                     opcode <= instruction[3:0];
                     sel1 <= 0; //pass data_out
                     sel3 <= 1; //pass offset
                     w_r <= 0;
                 end else if (instruction[19:18] == 2'b11) begin //storeR
-                  operand1 <= regfile[instruction[15:14]]; //X2
-                  operand2 <= regfile[instruction[17:16]]; //z
-                  offset <= instruction[11:4];
-                  opcode <= instruction[3:0];
-                  sel1 <= 1;
-                  sel3 <= 1; //pass offset
-                  w_r <= 1; // 1 since we're writing to memory
+                    operand1 <= regfile[instruction[15:14]]; //X2
+                  	operand2 <= regfile[instruction[17:16]]; //X1
+                  	//operand3 <= regfile;
+                    offset <= instruction[11:4];
+                    opcode <= instruction[3:0];
+                    sel1 <= 1;
+                    sel3 <= 1;
+                    w_r <= 0;
+
 
                 end
             end
@@ -93,6 +99,7 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
                     state = WRITE_BACK;
                     operand1 <= regfile[instruction[15:14]]; //X2
                     operand2 <= regfile[instruction[13:12]]; //X3
+                  	//operand3 <= regfile;
                     offset <= instruction[11:4];
                     opcode <= instruction[3:0];
                     sel1 <= 1;
@@ -102,20 +109,18 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
                 end else if (instruction[19:18] == 2'b10) begin //loadR
                     operand1 <= regfile[instruction[15:14]]; //X2
                     operand2 <= regfile[instruction[17:16]]; //z
+                  	//operand3 <= regfile;
                     offset <= instruction[11:4];
                     opcode <= instruction[3:0];
                     sel1 <= 0; //pass data_out
                     sel3 <= 1; //pass offset
                     w_r <= 0;
                 end else if (instruction[19:18] == 2'b11) begin //storeR
-                    operand1 <= regfile[instruction[15:14]]; //X2
-                    operand2 <= regfile[instruction[17:16]]; //z
-                    offset <= instruction[11:4];
-                    opcode <= instruction[3:0];
-                    sel1 <= 1; //pass data_out
-                    sel3 <= 1; //pass offset
-                    w_r <= 1;
-
+                   /********************************************
+                   *
+                   * FILL IN CORRECT CODE HERE
+                   *
+                   ********************************************/
                 end
             end
             MEM_ACCESS: begin //#3
@@ -123,21 +128,30 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
                 if (instruction[19:18] == 2'b10) begin //loadR
                     operand1 <= regfile[instruction[15:14]]; //X2
                     operand2 <= regfile[instruction[17:16]]; //z
+                  	//operand3 <= regfile;
                     offset <= instruction[11:4];
                     opcode <= instruction[3:0];
                     sel1 <= 0; //pass data_out
                     sel3 <= 1; //pass offset
                     w_r <= 0;
                 end else if (instruction[19:18] == 2'b11) begin //storeR
-                      state = DECODE;
-                      operand1 <= regfile[instruction[15:14]]; //X2
-                      operand2 <= regfile[instruction[17:16]]; //z
-                      offset <= instruction[11:4];
-                      opcode <= instruction[3:0];
-                      sel1 <= 1; //pass data_out
-                      sel3 <= 1; //pass offset
-                      w_r <= 1;
-
+                    state = DECODE;
+                    operand1 <= regfile[instruction[15:14]]; //X2
+                  	operand2 <= regfile[instruction[17:16]]; //X1
+                  	//operand3 <= regfile;
+                    offset <= instruction[11:4];
+                    opcode <= instruction[3:0];
+                    sel1 <= 1;
+                    sel3 <= 1;
+                    w_r <= 0;
+                   /********************************************
+                   *
+                   * FILL IN CORRECT CODE HERE
+                   * Take note of what the next state should be according to
+                   * the FSM
+                   *
+                   ********************************************/
+                end
             end
             WRITE_BACK: begin //#4
                 state = DECODE; //#1
@@ -146,25 +160,30 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
 
                     operand1 <= regfile[instruction[15:14]]; //X2
                     operand2 <= regfile[instruction[13:12]]; //X3
+                  	//operand3 <= regfile;
                     offset <= instruction[11:4];
                     opcode <= instruction[3:0];
                     sel1 <= 1;
                     sel3 <= 0;
                     w_r <= 0;
                 end else if (instruction[19:18] == 2'b11) begin //storeR
-                    regfile[instruction[17:16]] <= result2; //From data mem
-                    operand1 <= regfile[instruction[15:14]]; //X2
-                    operand2 <= regfile[instruction[17:16]]; //z
+                  	regfile[instruction[17:16]] <= result2; //X1
+
+                  	operand1 <= regfile[instruction[15:14]]; //X2
+                  	operand2 <= regfile[instruction[17:16]]; //X1
+                  	//operand3 <= regfile;
                     offset <= instruction[11:4];
                     opcode <= instruction[3:0];
-                    sel1 <= 1; //pass data_out
-                    sel3 <= 0; //pass offset
-                    w_r <= 1;
+                    sel1 <= 1;
+                    sel3 <= 1;
+                    w_r <= 0;
+                   
 
                 end else if (instruction[19:18] == 2'b10) begin //loadR
                     regfile[instruction[17:16]] <= result2; //From data mem
                     operand1 <= regfile[instruction[15:14]]; //X2
                     operand2 <= regfile[instruction[17:16]]; //z
+                  	//operand3 <= regfile;
                     offset <= instruction[11:4];
                     opcode <= instruction[3:0];
                     sel1 <= 0; //pass data_out
@@ -174,7 +193,7 @@ module CU (clk,rst, instr, result2, operand1, operand2, offset, opcode, sel1, se
             end
 
             default: // Fault Recovery
-            state = RESET; //#0
+            	state = RESET; //#0
         endcase
     end
 endmodule
